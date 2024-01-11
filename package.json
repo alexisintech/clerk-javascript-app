@@ -1,15 +1,14 @@
 {
-  "dependencies": {
-    "@clerk/clerk-js": "^4.68.4"
-  },
   "name": "clerk-javascript-app",
   "version": "1.0.0",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@clerk/clerk-js": "^5.0.0-alpha-v5.16"
+  }
 }
