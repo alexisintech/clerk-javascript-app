@@ -14,6 +14,8 @@
       <button onclick="Clerk.openSignIn()">Sign In</button>
     </div>
 
+    <div id="create-organization"></div>
+
     <div id="user-button"></div>
 
     <div id="no-frontend-api-warning" hidden>
@@ -21,7 +23,9 @@
       <h4>Add it to the top of <code>src/index.js</code>.</h4>
     </div>
 
-    <script>
+    <script src="src/index.js" async crossorigin="anonymous"></script>
+
+    <!-- <script>
       // Get this URL and Publishable Key from the Clerk Dashboard
       const clerkPublishableKey = `pk_test_ZGlzdGluY3QtbW9zcXVpdG8tMTQuY2xlcmsuYWNjb3VudHMuZGV2JA`;
       const frontendApi = 'https://distinct-mosquito-14.clerk.accounts.dev';
@@ -60,6 +64,6 @@
         */
       });
       document.body.appendChild(script);
-    </script>
+    </script> -->
 </body>
 </html>

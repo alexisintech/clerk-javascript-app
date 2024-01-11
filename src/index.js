@@ -9,6 +9,7 @@ const startClerk = async () => {
 
     const userButton = document.getElementById("user-button");
     const authLinks = document.getElementById("auth-links");
+    const createOrgButton = document.getElementById("create-org-button");
 
     Clerk.addListener(({ user }) => {
       // Display links conditionally based on user state
@@ -19,6 +20,9 @@ const startClerk = async () => {
       // Mount user button component
       Clerk.mountUserButton(userButton);
       userButton.style.margin = "auto";
+
+      // Mount create org button component
+      Clerk.mountCreateOrganization(createOrgButton);
     }
   } catch (err) {
     console.error("Error starting Clerk: ", err);
