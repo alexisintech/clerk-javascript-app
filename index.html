@@ -23,9 +23,9 @@
       <h4>Add it to the top of <code>src/index.js</code>.</h4>
     </div>
 
-    <script src="src/index.js" async crossorigin="anonymous"></script>
+    <!-- <script src="src/index.js" async crossorigin="anonymous"></script> -->
 
-    <!-- <script>
+    <script>
       // Get this URL and Publishable Key from the Clerk Dashboard
       const clerkPublishableKey = `pk_test_ZGlzdGluY3QtbW9zcXVpdG8tMTQuY2xlcmsuYWNjb3VudHMuZGV2JA`;
       const frontendApi = 'https://distinct-mosquito-14.clerk.accounts.dev';
@@ -41,7 +41,11 @@
       // Adds listener to initialize ClerkJS after it's loaded
       script.addEventListener('load', async function () {
         await window.Clerk.load();
+
+        // before v5
+        console.log(await window.Clerk.user.getOrganizationMemberships());
   
+        // after v5
         const { data } = await window.Clerk.user.getOrganizationMemberships();
 
         console.log(data);
@@ -64,6 +68,6 @@
         */
       });
       document.body.appendChild(script);
-    </script> -->
+    </script>
 </body>
 </html>
