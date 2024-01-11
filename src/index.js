@@ -23,6 +23,13 @@ const startClerk = async () => {
 
       // Mount create org button component
       Clerk.mountCreateOrganization(createOrgButton);
+
+      // before v5
+      console.log(await Clerk.user.getOrganizationMemberships());
+
+      // after v5
+      const { data } = await Clerk.user.getOrganizationMemberships();
+      console.log(data);
     }
   } catch (err) {
     console.error("Error starting Clerk: ", err);
