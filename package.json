@@ -9,6 +9,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@clerk/clerk-js": "^5.0.0-alpha-v5.16"
+    "@clerk/clerk-js": "^5.0.0-beta-v5.20"
   }
 }

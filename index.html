@@ -10,8 +10,8 @@
   <h1>JavaScript Test App</h1>
 
     <div id="auth-links">
-      <button onclick="Clerk.openSignUp()">Sign Up</button>
-      <button onclick="Clerk.openSignIn()">Sign In</button>
+      <div id="sign-in-button"></div>
+      <div id="sign-up-button"></div>
     </div>
 
     <div id="create-org-button"></div>
@@ -23,13 +23,34 @@
       <h4>Add it to the top of <code>src/index.js</code>.</h4>
     </div>
 
+    <ul id="memberships_list"></ul>
+<ul id="invitations_list"></ul>
+
+<form id="new_invitation">
+  <div>
+    <label>Email address</div>
+    <br />
+    <input type="email" id="email_address" name="email_address" />
+  </div>
+  <button>Invite</button>
+</form>
+
+<form id="edit_organization">
+  <div>
+    <label>Name</label>
+    <br />
+    <input name="name" />
+  </div>
+  <button>Save</button>
+</form>
+
     <!-- <script src="src/index.js" async crossorigin="anonymous"></script> -->
 
     <script>
       // Get this URL and Publishable Key from the Clerk Dashboard
-      const clerkPublishableKey = `pk_test_ZGlzdGluY3QtbW9zcXVpdG8tMTQuY2xlcmsuYWNjb3VudHMuZGV2JA`;
+      const clerkPublishableKey = 'pk_test_ZGlzdGluY3QtbW9zcXVpdG8tMTQuY2xlcmsuYWNjb3VudHMuZGV2JA';
       const frontendApi = 'https://distinct-mosquito-14.clerk.accounts.dev';
-      const version = '5.0.0-alpha-v5.8'; // Set to appropriate version
+      const version = '^5.0.0-beta-v5.20'; // Set to appropriate version
     
       // Creates asynchronous script
       const script = document.createElement('script');
@@ -41,31 +62,120 @@
       // Adds listener to initialize ClerkJS after it's loaded
       script.addEventListener('load', async function () {
         await window.Clerk.load();
+        
+        const userButtonComponent = document.getElementById('user-button');
+        const signInButton = document.getElementById('sign-in-button');
+        const signUpButton = document.getElementById('sign-up-button');
 
-        // before v5
-        console.log(await window.Clerk.user.getOrganizationMemberships());
-  
-        // after v5
-        const { data } = await window.Clerk.user.getOrganizationMemberships();
+        window.Clerk.mountUserButton(userButtonComponent);
+        window.Clerk.mountSignIn(signInButton);
+        window.Clerk.mountSignUp(signUpButton);
+      
+  async function renderMemberships(organization, isAdmin) {
+    const list = document.getElementById("memberships_list");
+    try {
+      const memberships = await organization.getMemberships();
 
-        console.log(data);
-  
-        /* data is an array that contains an OrganizationMembershipResource, which would look something like this:
-        [
-          {
-            id: "orgmem_123",
-            organization: { ...Organization }, // Organization object
-            permissions: [ "org:sys_memberships:read", "org:sys_memberships:manage", "org:sys_domains:read" ],
-            publicMetadata: {},
-            publicUserData: { firstName: "John", lastName: "Doe", imageUrl: "https://image-url.com", hasImage: true, identifier: "johndoe@email.com", userId: "user_123" },
-            role: "admin",
-            createdAt: "2021-09-28T14:00:00.000Z",
-            updatedAt: "2021-09-28T14:00:00.000Z",
-            destroy: () => { ... },
-            update: (updateParams) => { ... },
-          }
-        ]
-        */
+      console.log(`Memberships: ${JSON.stringify(memberships)}`);
+
+      memberships.map((membership) => {
+        const li = document.createElement("li");
+        li.textContent = `${membership.publicUserData.identifier} - ${membership.role}`;
+
+        // Add administrative actions; update role and remove member.
+        if (isAdmin) {
+          const updateBtn = document.createElement("button");
+          updateBtn.textContent = "Change role";
+          updateBtn.addEventListener("click", async function(e) {
+            e.preventDefault();
+            const role = membership.role === "admin" ?
+              "org:member" :
+              "admin";
+            await membership.update({ role });
+          });
+          li.appendChild(updateBtn);
+
+          const removeBtn = document.createElement("button");
+          removeBtn.textContent = "Remove";
+          removeBtn.addEventListener("click", async function(e) {
+            e.preventDefault();
+            await currentOrganization.removeMember(membership.userId);
+          });
+          li.appendChild(removeBtn);
+        }
+
+        // Add the entry to the list
+        list.appendChild(li);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function renderInvitations(organization, isAdmin) {
+    const list = document.getElementById("invitations_list");
+    try {
+      const invitations = await organization.getPendingInvitations();
+      invitations.map((invitation) => {
+        const li = document.createElement("li");
+        li.textContent = `${invitation.emailAddress} - ${invitation.role}`;
+
+        // Add administrative actions; revoke invitation
+        if (isAdmin) {
+          const revokeBtn = document.createElement("button");
+          revokeBtn.textContent = "Revoke";
+          revokeBtn.addEventListener("click", async function(e) {
+            e.preventDefault();
+            await invitation.revoke();
+          });
+          li.appendChild(revokeBtn);
+        }
+        // Add the entry to the list
+        list.appendChild(li);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function init() {
+    // This is the current organization ID.
+    const organizationId = "org_2ap1FzvbwsCfvKid8wJqa5ltkEw";
+    const organizationMemberships = await window.Clerk.user.getOrganizationMemberships()
+    const currentMembership = organizationMemberships.find(membership => membership.organization.id === organizationId);
+    const currentOrganization = currentMembership.organization;
+    
+    if (!currentOrganization) {
+      return;
+    }
+    const isAdmin = currentMembership.role === "admin";
+
+    renderMemberships(currentOrganization, isAdmin);
+    renderInvitations(currentOrganization, isAdmin);
+
+    if (isAdmin) {
+      const form = document.getElementById("new_invitation");
+      form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const inputEl = document.getElementById("email_address");
+        if (!inputEl) {
+          return;
+        }
+
+        try {
+          console.log(inputEl.value);
+          await currentOrganization.inviteMember({
+            emailAddress: inputEl.value,
+            role: "org:member",
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    }
+  }
+
+  init();
       });
       document.body.appendChild(script);
     </script>
