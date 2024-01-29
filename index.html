@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JavaScript App</title>
-  <link href="src/style.css" rel="stylesheet" />
-</head>
-<body>
-  <h1>JavaScript Test App</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript App</title>
+    <link href="src/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <h1>JavaScript Test App</h1>
 
     <div id="auth-links">
       <div id="sign-in-button"></div>
@@ -24,160 +24,165 @@
     </div>
 
     <ul id="memberships_list"></ul>
-<ul id="invitations_list"></ul>
+    <ul id="invitations_list"></ul>
 
-<form id="new_invitation">
-  <div>
-    <label>Email address</div>
-    <br />
-    <input type="email" id="email_address" name="email_address" />
-  </div>
-  <button>Invite</button>
-</form>
+    <form id="new_invitation">
+      <div>
+        <label>Email address</label>
+        <br />
+        <input type="email" id="email_address" name="email_address" />
+      </div>
+      <button>Invite</button>
+    </form>
 
-<form id="edit_organization">
-  <div>
-    <label>Name</label>
-    <br />
-    <input name="name" />
-  </div>
-  <button>Save</button>
-</form>
+    <form id="edit_organization">
+      <div>
+        <label>Name</label>
+        <br />
+        <input name="name" />
+      </div>
+      <button>Save</button>
+    </form>
 
+    <!-- Use with NPM module (comment out if using a script) -->
     <!-- <script src="src/index.js" async crossorigin="anonymous"></script> -->
 
+    <!-- Use with Script (comment out if using NPM module) -->
     <script>
       // Get this URL and Publishable Key from the Clerk Dashboard
-      const clerkPublishableKey = 'pk_test_ZGlzdGluY3QtbW9zcXVpdG8tMTQuY2xlcmsuYWNjb3VudHMuZGV2JA';
-      const frontendApi = 'https://distinct-mosquito-14.clerk.accounts.dev';
-      const version = '^5.0.0-beta-v5.20'; // Set to appropriate version
-    
+      const clerkPublishableKey =
+        "pk_test_ZGlzdGluY3QtbW9zcXVpdG8tMTQuY2xlcmsuYWNjb3VudHMuZGV2JA";
+      const frontendApi = "https://distinct-mosquito-14.clerk.accounts.dev";
+      const version = "^5.0.0-beta-v5.20"; // Set to appropriate version
+
       // Creates asynchronous script
-      const script = document.createElement('script');
-      script.setAttribute('data-clerk-frontend-api', frontendApi);
-      script.setAttribute('data-clerk-publishable-key', clerkPublishableKey);
+      const script = document.createElement("script");
+      script.setAttribute("data-clerk-frontend-api", frontendApi);
+      script.setAttribute("data-clerk-publishable-key", clerkPublishableKey);
       script.async = true;
       script.src = `${frontendApi}/npm/@clerk/clerk-js${version}/dist/clerk.browser.js`;
-    
+
       // Adds listener to initialize ClerkJS after it's loaded
-      script.addEventListener('load', async function () {
+      script.addEventListener("load", async function () {
         await window.Clerk.load();
-        
-        const userButtonComponent = document.getElementById('user-button');
-        const signInButton = document.getElementById('sign-in-button');
-        const signUpButton = document.getElementById('sign-up-button');
+
+        const userButtonComponent = document.getElementById("user-button");
+        const signInButton = document.getElementById("sign-in-button");
+        const signUpButton = document.getElementById("sign-up-button");
 
         window.Clerk.mountUserButton(userButtonComponent);
         window.Clerk.mountSignIn(signInButton);
         window.Clerk.mountSignUp(signUpButton);
-      
-  async function renderMemberships(organization, isAdmin) {
-    const list = document.getElementById("memberships_list");
-    try {
-      const memberships = await organization.getMemberships();
 
-      console.log(`Memberships: ${JSON.stringify(memberships)}`);
+        async function renderMemberships(organization, isAdmin) {
+          const list = document.getElementById("memberships_list");
+          try {
+            const memberships = await organization.getMemberships();
 
-      memberships.map((membership) => {
-        const li = document.createElement("li");
-        li.textContent = `${membership.publicUserData.identifier} - ${membership.role}`;
+            console.log(`Memberships: ${JSON.stringify(memberships)}`);
 
-        // Add administrative actions; update role and remove member.
-        if (isAdmin) {
-          const updateBtn = document.createElement("button");
-          updateBtn.textContent = "Change role";
-          updateBtn.addEventListener("click", async function(e) {
-            e.preventDefault();
-            const role = membership.role === "admin" ?
-              "org:member" :
-              "admin";
-            await membership.update({ role });
-          });
-          li.appendChild(updateBtn);
+            memberships.map((membership) => {
+              const li = document.createElement("li");
+              li.textContent = `${membership.publicUserData.identifier} - ${membership.role}`;
 
-          const removeBtn = document.createElement("button");
-          removeBtn.textContent = "Remove";
-          removeBtn.addEventListener("click", async function(e) {
-            e.preventDefault();
-            await currentOrganization.removeMember(membership.userId);
-          });
-          li.appendChild(removeBtn);
+              // Add administrative actions; update role and remove member.
+              if (isAdmin) {
+                const updateBtn = document.createElement("button");
+                updateBtn.textContent = "Change role";
+                updateBtn.addEventListener("click", async function (e) {
+                  e.preventDefault();
+                  const role =
+                    membership.role === "admin" ? "org:member" : "admin";
+                  await membership.update({ role });
+                });
+                li.appendChild(updateBtn);
+
+                const removeBtn = document.createElement("button");
+                removeBtn.textContent = "Remove";
+                removeBtn.addEventListener("click", async function (e) {
+                  e.preventDefault();
+                  await currentOrganization.removeMember(membership.userId);
+                });
+                li.appendChild(removeBtn);
+              }
+
+              // Add the entry to the list
+              list.appendChild(li);
+            });
+          } catch (err) {
+            console.error(err);
+          }
         }
 
-        // Add the entry to the list
-        list.appendChild(li);
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }
+        async function renderInvitations(organization, isAdmin) {
+          const list = document.getElementById("invitations_list");
+          try {
+            const invitations = await organization.getPendingInvitations();
+            invitations.map((invitation) => {
+              const li = document.createElement("li");
+              li.textContent = `${invitation.emailAddress} - ${invitation.role}`;
 
-  async function renderInvitations(organization, isAdmin) {
-    const list = document.getElementById("invitations_list");
-    try {
-      const invitations = await organization.getPendingInvitations();
-      invitations.map((invitation) => {
-        const li = document.createElement("li");
-        li.textContent = `${invitation.emailAddress} - ${invitation.role}`;
-
-        // Add administrative actions; revoke invitation
-        if (isAdmin) {
-          const revokeBtn = document.createElement("button");
-          revokeBtn.textContent = "Revoke";
-          revokeBtn.addEventListener("click", async function(e) {
-            e.preventDefault();
-            await invitation.revoke();
-          });
-          li.appendChild(revokeBtn);
-        }
-        // Add the entry to the list
-        list.appendChild(li);
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async function init() {
-    // This is the current organization ID.
-    const organizationId = "org_2ap1FzvbwsCfvKid8wJqa5ltkEw";
-    const organizationMemberships = await window.Clerk.user.getOrganizationMemberships()
-    const currentMembership = organizationMemberships.find(membership => membership.organization.id === organizationId);
-    const currentOrganization = currentMembership.organization;
-    
-    if (!currentOrganization) {
-      return;
-    }
-    const isAdmin = currentMembership.role === "admin";
-
-    renderMemberships(currentOrganization, isAdmin);
-    renderInvitations(currentOrganization, isAdmin);
-
-    if (isAdmin) {
-      const form = document.getElementById("new_invitation");
-      form.addEventListener("submit", async function(e) {
-        e.preventDefault();
-        const inputEl = document.getElementById("email_address");
-        if (!inputEl) {
-          return;
+              // Add administrative actions; revoke invitation
+              if (isAdmin) {
+                const revokeBtn = document.createElement("button");
+                revokeBtn.textContent = "Revoke";
+                revokeBtn.addEventListener("click", async function (e) {
+                  e.preventDefault();
+                  await invitation.revoke();
+                });
+                li.appendChild(revokeBtn);
+              }
+              // Add the entry to the list
+              list.appendChild(li);
+            });
+          } catch (err) {
+            console.error(err);
+          }
         }
 
-        try {
-          console.log(inputEl.value);
-          await currentOrganization.inviteMember({
-            emailAddress: inputEl.value,
-            role: "org:member",
-          });
-        } catch (err) {
-          console.error(err);
-        }
-      });
-    }
-  }
+        async function init() {
+          // This is the current organization ID.
+          const organizationId = "org_2ap1FzvbwsCfvKid8wJqa5ltkEw";
+          const organizationMemberships =
+            await window.Clerk.user.getOrganizationMemberships();
+          const currentMembership = organizationMemberships.find(
+            (membership) => membership.organization.id === organizationId
+          );
+          const currentOrganization = currentMembership.organization;
 
-  init();
+          if (!currentOrganization) {
+            return;
+          }
+          const isAdmin = currentMembership.role === "admin";
+
+          renderMemberships(currentOrganization, isAdmin);
+          renderInvitations(currentOrganization, isAdmin);
+
+          if (isAdmin) {
+            const form = document.getElementById("new_invitation");
+            form.addEventListener("submit", async function (e) {
+              e.preventDefault();
+              const inputEl = document.getElementById("email_address");
+              if (!inputEl) {
+                return;
+              }
+
+              try {
+                console.log(inputEl.value);
+                await currentOrganization.inviteMember({
+                  emailAddress: inputEl.value,
+                  role: "org:member",
+                });
+              } catch (err) {
+                console.error(err);
+              }
+            });
+          }
+        }
+
+        init();
       });
       document.body.appendChild(script);
     </script>
-</body>
+  </body>
 </html>
