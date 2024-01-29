@@ -10,12 +10,14 @@
     <h1>JavaScript Test App</h1>
 
     <div id="auth-links">
-      <div id="sign-in-button"></div>
-      <div id="sign-up-button"></div>
+      <button onclick="Clerk.openSignUp()">Sign Up</button>
+      <button onclick="Clerk.openSignIn()">Sign In</button>
     </div>
 
+    <h2>Create Organization button:</h2>
     <div id="create-org-button"></div>
 
+    <h2>User Button (for signing out and managing account):</h2>
     <div id="user-button"></div>
 
     <div id="no-frontend-api-warning" hidden>
@@ -23,9 +25,13 @@
       <h4>Add it to the top of <code>src/index.js</code>.</h4>
     </div>
 
+    <h2>Memberships List</h2>
     <ul id="memberships_list"></ul>
+
+    <h2>Invitations List</h2>
     <ul id="invitations_list"></ul>
 
+    <h2>Send a new invitation</h2>
     <form id="new_invitation">
       <div>
         <label>Email address</label>
@@ -35,6 +41,7 @@
       <button>Invite</button>
     </form>
 
+    <h2>Edit Organization</h2>
     <form id="edit_organization">
       <div>
         <label>Name</label>
@@ -53,7 +60,7 @@
       const clerkPublishableKey =
         "pk_test_ZGlzdGluY3QtbW9zcXVpdG8tMTQuY2xlcmsuYWNjb3VudHMuZGV2JA";
       const frontendApi = "https://distinct-mosquito-14.clerk.accounts.dev";
-      const version = "^5.0.0-beta-v5.20"; // Set to appropriate version
+      const version = "@5.0.0-beta-v5.20"; // Set to appropriate version
 
       // Creates asynchronous script
       const script = document.createElement("script");
@@ -67,19 +74,15 @@
         await window.Clerk.load();
 
         const userButtonComponent = document.getElementById("user-button");
-        const signInButton = document.getElementById("sign-in-button");
-        const signUpButton = document.getElementById("sign-up-button");
 
         window.Clerk.mountUserButton(userButtonComponent);
-        window.Clerk.mountSignIn(signInButton);
-        window.Clerk.mountSignUp(signUpButton);
 
         async function renderMemberships(organization, isAdmin) {
           const list = document.getElementById("memberships_list");
           try {
-            const memberships = await organization.getMemberships();
+            const { totalCount, data } = await organization.getMemberships();
 
-            console.log(`Memberships: ${JSON.stringify(memberships)}`);
+            const memberships = data;
 
             memberships.map((membership) => {
               const li = document.createElement("li");
@@ -117,7 +120,10 @@
         async function renderInvitations(organization, isAdmin) {
           const list = document.getElementById("invitations_list");
           try {
-            const invitations = await organization.getPendingInvitations();
+            const { totalCount, data } = await organization.getInvitations();
+
+            const invitations = data;
+
             invitations.map((invitation) => {
               const li = document.createElement("li");
               li.textContent = `${invitation.emailAddress} - ${invitation.role}`;
@@ -143,8 +149,11 @@
         async function init() {
           // This is the current organization ID.
           const organizationId = "org_2ap1FzvbwsCfvKid8wJqa5ltkEw";
-          const organizationMemberships =
+          const { totalCount, data } =
             await window.Clerk.user.getOrganizationMemberships();
+
+          const organizationMemberships = data;
+
           const currentMembership = organizationMemberships.find(
             (membership) => membership.organization.id === organizationId
           );
