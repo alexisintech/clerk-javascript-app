@@ -20,6 +20,9 @@
     <h2>User Button (for signing out and managing account):</h2>
     <div id="user-button"></div>
 
+    <h2>User info</h2>
+    <div id="user-info"></div>
+
     <div id="no-frontend-api-warning" hidden>
       <h3>No Frontend API found</h3>
       <h4>Add it to the top of <code>src/index.js</code>.</h4>
@@ -51,12 +54,10 @@
       <button>Save</button>
     </form>
 
-    <!-- Use with NPM module (comment out if using a script) -->
-    <!-- <script src="src/index.js" async crossorigin="anonymous"></script> -->
-
     <!-- Use with Script (comment out if using NPM module) -->
     <script>
       // Get this URL and Publishable Key from the Clerk Dashboard
+      //my-app pub key
       const clerkPublishableKey =
         "pk_test_ZGlzdGluY3QtbW9zcXVpdG8tMTQuY2xlcmsuYWNjb3VudHMuZGV2JA";
       const frontendApi = "https://distinct-mosquito-14.clerk.accounts.dev";
@@ -74,8 +75,31 @@
         await window.Clerk.load();
 
         const userButtonComponent = document.getElementById("user-button");
+        window.Clerk.mountUserButton(userButtonComponent, {});
 
-        window.Clerk.mountUserButton(userButtonComponent);
+        const createOrganizationComponent =
+          document.querySelector("#create-org-button");
+        window.Clerk.mountCreateOrganization(createOrganizationComponent, {});
+
+        const userInfo = document.getElementById("user-info");
+        const user = await window.Clerk.user;
+        console.log(user);
+        userInfo.appendChild(
+          document.createElement("li")
+        ).textContent = `ID: ${user.id}`;
+        userInfo.appendChild(
+          document.createElement("li")
+        ).textContent = `First name: ${user.firstName}`;
+        userInfo.appendChild(
+          document.createElement("li")
+        ).textContent = `Last name: ${user.lastName}`;
+        userInfo.appendChild(
+          document.createElement("li")
+        ).textContent = `Username: ${user.username}`;
+
+        // MEMBERSHIPS LIST
+        const { data } = await Clerk.user.getOrganizationMemberships();
+        console.log(`Organization Memberships:`, data);
 
         async function renderMemberships(organization, isAdmin) {
           const list = document.getElementById("memberships_list");
@@ -86,7 +110,7 @@
 
             memberships.map((membership) => {
               const li = document.createElement("li");
-              li.textContent = `${membership.publicUserData.identifier} - ${membership.role}`;
+              li.textContent = `ID: ${membership.id} Identifier: ${membership.publicUserData.identifier} UserId: ${membership.publicUserData.userId} Role: ${membership.role} Permissions: ${membership.permissions}`;
 
               // Add administrative actions; update role and remove member.
               if (isAdmin) {
@@ -117,6 +141,7 @@
           }
         }
 
+        // INVITATIONS LIST
         async function renderInvitations(organization, isAdmin) {
           const list = document.getElementById("invitations_list");
           try {
