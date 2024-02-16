@@ -9,10 +9,15 @@
   <body>
     <h1>JavaScript Test App</h1>
 
+    <div id="app"></div>
+
     <div id="auth-links">
       <button onclick="Clerk.openSignUp()">Sign Up</button>
       <button onclick="Clerk.openSignIn()">Sign In</button>
     </div>
+
+    <h2 style="color: red">Roy, test theme on sign in component:</h2>
+    <div id="sign-in"></div>
 
     <h2>Create Organization button:</h2>
     <div id="create-org-button"></div>
@@ -74,8 +79,18 @@
       script.addEventListener("load", async function () {
         await window.Clerk.load();
 
-        const userButtonComponent = document.getElementById("user-button");
-        window.Clerk.mountUserButton(userButtonComponent, {});
+        if (!window.Clerk.user) {
+          // ROY !! Testing theme on sign in component
+          const signInComponent = document.getElementById("sign-in");
+          window.Clerk.mountSignIn(signInComponent, {
+            appearance: {
+              baseTheme: "neobrutalism",
+            },
+          });
+        } else {
+          const userButtonComponent = document.getElementById("user-button");
+          window.Clerk.mountUserButton(userButtonComponent, {});
+        }
 
         const createOrganizationComponent =
           document.querySelector("#create-org-button");
