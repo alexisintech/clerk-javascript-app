@@ -10,24 +10,27 @@
     <h1>ClerkJS script version</h1>
 
     <div id="app"></div>
-    <div id="sign-in"></div>
 
+    <h2>Other auth buttons:</h2>
     <div id="auth-links">
       <button onclick="Clerk.openSignUp()">Sign Up</button>
       <button onclick="Clerk.openSignIn()">Sign In</button>
     </div>
 
-    <h2>User Button</h2>
+    <h2>User Button component</h2>
     <div id="user-button"></div>
 
-    <h2>User Profile</h2>
+    <h2>User Profile component</h2>
     <div id="user-profile"></div>
 
     <h2>User info</h2>
     <div id="user-info"></div>
 
-    <h2>Create Organization button</h2>
-    <div id="create-org-button"></div>
+    <h2>Create Organization component</h2>
+    <div id="create-org"></div>
+
+    <h2>Organization Switcher component</h2>
+    <div id="organization-switcher"></div>
 
     <h2>Memberships List</h2>
     <ul id="memberships_list"></ul>
@@ -55,14 +58,6 @@
       <button>Save</button>
     </form>
 
-    <input
-      type="password"
-      id="current-password"
-      placeholder="Current password"
-    />
-    <p id="error"></p>
-    <button id="remove-password-button">Remove Password</button>
-
     <script
       async
       crossorigin="anonymous"
@@ -71,51 +66,12 @@
       type="text/javascript"
     ></script>
 
-    <!-- <script>
-      window.addEventListener("load", async function () {
-        await Clerk.load();
-
-        if (Clerk.user) {
-          document
-            .getElementById("remove-password-button")
-            .addEventListener("click", async () => {
-              const currentPassword =
-                document.getElementById("current-password").value;
-              Clerk.user
-                .removePassword({ currentPassword })
-                .then((response) => {
-                  console.log(response);
-                  console.log("Password removed successfully");
-                })
-                .catch((error) => {
-                  document.getElementById("error").innerHTML =
-                    error.errors[0].longMessage;
-                  console.log("An error occurred:", error.errors);
-                });
-            });
-        } else {
-          document.getElementById("app").innerHTML = `
-              <div id="sign-in"></div>
-            `;
-
-          const signInDiv = document.getElementById("sign-in");
-
-          Clerk.mountSignIn(signInDiv);
-        }
-      });
-    </script> -->
-
     <script>
       window.addEventListener("load", async function () {
         await Clerk.load();
 
         if (Clerk.user) {
           console.log(Clerk.user);
-
-          // Mount create organization component
-          const createOrganizationComponent =
-            document.querySelector("#create-org-button");
-          Clerk.mountCreateOrganization(createOrganizationComponent, {});
 
           // Mount user button component
           const userbuttonDiv = document.getElementById("user-button");
@@ -141,7 +97,17 @@
             document.createElement("li")
           ).textContent = `Username: ${user.username}`;
 
-          // MEMBERSHIPS LIST
+          // Mount create organization component
+          const createOrganizationComponent =
+            document.getElementById("create-org");
+          Clerk.mountCreateOrganization(createOrganizationComponent);
+
+          // Mount organization switcher component
+          const organizationSwitcherComponent =
+            document.getElementById("organization-switcher");
+          Clerk.mountOrganizationSwitcher(organizationSwitcherComponent);
+
+          // Render list of organization memberships
           const data = await Clerk.user.getOrganizationMemberships();
           console.log(`Organization Memberships:`, data);
 
@@ -184,7 +150,7 @@
             }
           }
 
-          // INVITATIONS LIST
+          // Render list of organization invitations
           async function renderInvitations(organization, isAdmin) {
             const list = document.getElementById("invitations_list");
             try {
@@ -218,6 +184,7 @@
             }
           }
 
+          // Gets the current org, checks if the current user is an admin, renders memberships and invitations, and sets up the new invitation form.
           async function init() {
             // This is the current organization ID.
             const organizationId = Clerk.organization.id;
