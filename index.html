@@ -3,60 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ClerkJS Script</title>
-    <link href="src/style.css" rel="stylesheet" />
+    <title>Clerk + JavaScript App</title>
   </head>
   <body>
-    <h1>ClerkJS script version</h1>
+    <div id="signed-in"></div>
 
-    <div id="app"></div>
+    <p id="error" hidden></p>
 
-    <h2>Other auth buttons:</h2>
-    <div id="auth-links">
-      <button onclick="Clerk.openSignUp()">Sign Up</button>
-      <button onclick="Clerk.openSignIn()">Sign In</button>
+    <div id="sign-in">
+      <h2>Sign in</h2>
+      <form id="sign-in-form">
+        <label for="email">Enter email address</label>
+        <input name="email" id="sign-in-email" />
+        <label for="password">Enter password</label>
+        <input name="password" id="sign-in-password" />
+        <button type="submit">Continue</button>
+      </form>
     </div>
-
-    <h2>User Button component</h2>
-    <div id="user-button"></div>
-
-    <h2>User Profile component</h2>
-    <div id="user-profile"></div>
-
-    <h2>User info</h2>
-    <div id="user-info"></div>
-
-    <h2>Create Organization component</h2>
-    <div id="create-org"></div>
-
-    <h2>Organization Switcher component</h2>
-    <div id="organization-switcher"></div>
-
-    <h2>Memberships List</h2>
-    <ul id="memberships_list"></ul>
-
-    <h2>Invitations List</h2>
-    <ul id="invitations_list"></ul>
-
-    <h2>Send a new invitation</h2>
-    <form id="new_invitation">
-      <div>
-        <label>Email address</label>
-        <br />
-        <input type="email" id="email_address" name="email_address" />
-      </div>
-      <button>Invite</button>
-    </form>
-
-    <h2>Edit Organization</h2>
-    <form id="edit_organization">
-      <div>
-        <label>Name</label>
-        <br />
-        <input name="name" />
-      </div>
-      <button>Save</button>
-    </form>
 
     <script
       async
@@ -67,176 +30,55 @@
     ></script>
 
     <script>
-      window.addEventListener("load", async function () {
+      window.addEventListener('load', async function () {
         await Clerk.load();
 
         if (Clerk.user) {
-          console.log(Clerk.user);
-
           // Mount user button component
-          const userbuttonDiv = document.getElementById("user-button");
+          document.getElementById('signed-in').innerHTML = `
+    <div id="user-button"></div>
+  `;
+
+          const userbuttonDiv = document.getElementById('user-button');
+
           Clerk.mountUserButton(userbuttonDiv);
-
-          // Mount user profile component
-          const userProfileDiv = document.getElementById("user-profile");
-          Clerk.mountUserProfile(userProfileDiv);
-
-          // Render user info
-          const userInfo = document.getElementById("user-info");
-          const user = await Clerk.user;
-          userInfo.appendChild(
-            document.createElement("li")
-          ).textContent = `ID: ${user.id}`;
-          userInfo.appendChild(
-            document.createElement("li")
-          ).textContent = `First name: ${user.firstName}`;
-          userInfo.appendChild(
-            document.createElement("li")
-          ).textContent = `Last name: ${user.lastName}`;
-          userInfo.appendChild(
-            document.createElement("li")
-          ).textContent = `Username: ${user.username}`;
-
-          // Mount create organization component
-          const createOrganizationComponent =
-            document.getElementById("create-org");
-          Clerk.mountCreateOrganization(createOrganizationComponent);
-
-          // Mount organization switcher component
-          const organizationSwitcherComponent =
-            document.getElementById("organization-switcher");
-          Clerk.mountOrganizationSwitcher(organizationSwitcherComponent);
-
-          // Render list of organization memberships
-          const data = await Clerk.user.getOrganizationMemberships();
-          console.log(`Organization Memberships:`, data);
-
-          async function renderMemberships(organization, isAdmin) {
-            const list = document.getElementById("memberships_list");
-            try {
-              const memberships = await organization.getMemberships();
-              console.log(`getMemberships:`, memberships);
-
-              memberships.map((membership) => {
-                const li = document.createElement("li");
-                li.textContent = `ID: ${membership.id} Identifier: ${membership.publicUserData.identifier} UserId: ${membership.publicUserData.userId} Role: ${membership.role} Permissions: ${membership.permissions}`;
-
-                // Add administrative actions; update role and remove member.
-                if (isAdmin) {
-                  const updateBtn = document.createElement("button");
-                  updateBtn.textContent = "Change role";
-                  updateBtn.addEventListener("click", async function (e) {
-                    e.preventDefault();
-                    const role =
-                      membership.role === "admin" ? "org:member" : "admin";
-                    await membership.update({ role });
-                  });
-                  li.appendChild(updateBtn);
-
-                  const removeBtn = document.createElement("button");
-                  removeBtn.textContent = "Remove";
-                  removeBtn.addEventListener("click", async function (e) {
-                    e.preventDefault();
-                    await currentOrganization.removeMember(membership.userId);
-                  });
-                  li.appendChild(removeBtn);
-                }
-
-                // Add the entry to the list
-                list.appendChild(li);
-              });
-            } catch (err) {
-              console.error(err);
-            }
-          }
-
-          // Render list of organization invitations
-          async function renderInvitations(organization, isAdmin) {
-            const list = document.getElementById("invitations_list");
-            try {
-              const { totalCount, data } = await organization.getInvitations();
-
-              const invitations = data;
-
-              if (invitations.length === 0) {
-                list.textContent = "No invitations";
-              }
-
-              invitations.map((invitation) => {
-                const li = document.createElement("li");
-                li.textContent = `${invitation.emailAddress} - ${invitation.role}`;
-
-                // Add administrative actions; revoke invitation
-                if (isAdmin) {
-                  const revokeBtn = document.createElement("button");
-                  revokeBtn.textContent = "Revoke";
-                  revokeBtn.addEventListener("click", async function (e) {
-                    e.preventDefault();
-                    await invitation.revoke();
-                  });
-                  li.appendChild(revokeBtn);
-                }
-                // Add the entry to the list
-                list.appendChild(li);
-              });
-            } catch (err) {
-              console.error(err);
-            }
-          }
-
-          // Gets the current org, checks if the current user is an admin, renders memberships and invitations, and sets up the new invitation form.
-          async function init() {
-            // This is the current organization ID.
-            const organizationId = Clerk.organization.id;
-
-            const organizationMemberships =
-              await Clerk.user.getOrganizationMemberships();
-
-            const currentMembership = organizationMemberships.find(
-              (membership) => membership.organization.id === organizationId
-            );
-            const currentOrganization = currentMembership.organization;
-
-            if (!currentOrganization) {
-              return;
-            }
-            const isAdmin = currentMembership.role === "org:admin";
-
-            renderMemberships(currentOrganization, isAdmin);
-            renderInvitations(currentOrganization, isAdmin);
-
-            if (isAdmin) {
-              const form = document.getElementById("new_invitation");
-              form.addEventListener("submit", async function (e) {
-                e.preventDefault();
-                const inputEl = document.getElementById("email_address");
-                if (!inputEl) {
-                  return;
-                }
-
-                try {
-                  console.log(inputEl.value);
-                  await currentOrganization.inviteMember({
-                    emailAddress: inputEl.value,
-                    role: "org:member",
-                  });
-                } catch (err) {
-                  console.error(err);
-                }
-              });
-            }
-          }
-
-          init();
         } else {
-          // Mount sign in component
-          document.getElementById("app").innerHTML = `
-              <div id="sign-in"></div>
-            `;
+          const errorContainer = document.getElementById('error');
 
-          const signInDiv = document.getElementById("sign-in");
+          // Handle the sign-in form
+          document
+            .getElementById('sign-in-form')
+            .addEventListener('submit', async (e) => {
+              e.preventDefault();
 
-          Clerk.mountSignIn(signInDiv);
+              const formData = new FormData(e.target);
+              const emailAddress = formData.get('email');
+              const password = formData.get('password');
+
+              try {
+                // Start the sign-in process
+                const signInAttempt = await Clerk.client.signIn.create({
+                  identifier: emailAddress,
+                  password,
+                });
+
+                // If the sign-in is complete, set the user as active
+                if (signInAttempt.status === 'complete') {
+                  await Clerk.setActive({
+                    session: signInAttempt.createdSessionId,
+                  });
+                  location.reload();
+                } else {
+                  errorContainer.removeAttribute('hidden');
+                  errorContainer.innerHTML = error.errors[0].longMessage;
+                  console.error(error);
+                }
+              } catch (error) {
+                errorContainer.removeAttribute('hidden');
+                errorContainer.innerHTML = error.errors[0].longMessage;
+                console.error(error);
+              }
+            });
         }
       });
     </script>
