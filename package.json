@@ -8,5 +8,7 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "dependencies": {}
+  "dependencies": {
+    "@clerk/clerk-js": "^5.2.2"
+  }
 }
