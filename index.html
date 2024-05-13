@@ -3,8 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ClerkJS Script</title>
-    <link href="src/style.css" rel="stylesheet" />
+    <title>Clerk + JavaScript app</title>
   </head>
   <body>
     <h1>ClerkJS script version</h1>
@@ -67,44 +66,45 @@
     ></script>
 
     <script>
-      window.addEventListener("load", async function () {
+      window.addEventListener('load', async function () {
         await Clerk.load();
 
         if (Clerk.user) {
           console.log(Clerk.user);
 
           // Mount user button component
-          const userbuttonDiv = document.getElementById("user-button");
+          const userbuttonDiv = document.getElementById('user-button');
           Clerk.mountUserButton(userbuttonDiv);
 
           // Mount user profile component
-          const userProfileDiv = document.getElementById("user-profile");
+          const userProfileDiv = document.getElementById('user-profile');
           Clerk.mountUserProfile(userProfileDiv);
 
           // Render user info
-          const userInfo = document.getElementById("user-info");
+          const userInfo = document.getElementById('user-info');
           const user = await Clerk.user;
           userInfo.appendChild(
-            document.createElement("li")
+            document.createElement('li')
           ).textContent = `ID: ${user.id}`;
           userInfo.appendChild(
-            document.createElement("li")
+            document.createElement('li')
           ).textContent = `First name: ${user.firstName}`;
           userInfo.appendChild(
-            document.createElement("li")
+            document.createElement('li')
           ).textContent = `Last name: ${user.lastName}`;
           userInfo.appendChild(
-            document.createElement("li")
+            document.createElement('li')
           ).textContent = `Username: ${user.username}`;
 
           // Mount create organization component
           const createOrganizationComponent =
-            document.getElementById("create-org");
+            document.getElementById('create-org');
           Clerk.mountCreateOrganization(createOrganizationComponent);
 
           // Mount organization switcher component
-          const organizationSwitcherComponent =
-            document.getElementById("organization-switcher");
+          const organizationSwitcherComponent = document.getElementById(
+            'organization-switcher'
+          );
           Clerk.mountOrganizationSwitcher(organizationSwitcherComponent);
 
           // Render list of organization memberships
@@ -112,30 +112,30 @@
           console.log(`Organization Memberships:`, data);
 
           async function renderMemberships(organization, isAdmin) {
-            const list = document.getElementById("memberships_list");
+            const list = document.getElementById('memberships_list');
             try {
               const memberships = await organization.getMemberships();
               console.log(`getMemberships:`, memberships);
 
               memberships.map((membership) => {
-                const li = document.createElement("li");
+                const li = document.createElement('li');
                 li.textContent = `ID: ${membership.id} Identifier: ${membership.publicUserData.identifier} UserId: ${membership.publicUserData.userId} Role: ${membership.role} Permissions: ${membership.permissions}`;
 
                 // Add administrative actions; update role and remove member.
                 if (isAdmin) {
-                  const updateBtn = document.createElement("button");
-                  updateBtn.textContent = "Change role";
-                  updateBtn.addEventListener("click", async function (e) {
+                  const updateBtn = document.createElement('button');
+                  updateBtn.textContent = 'Change role';
+                  updateBtn.addEventListener('click', async function (e) {
                     e.preventDefault();
                     const role =
-                      membership.role === "admin" ? "org:member" : "admin";
+                      membership.role === 'admin' ? 'org:member' : 'admin';
                     await membership.update({ role });
                   });
                   li.appendChild(updateBtn);
 
-                  const removeBtn = document.createElement("button");
-                  removeBtn.textContent = "Remove";
-                  removeBtn.addEventListener("click", async function (e) {
+                  const removeBtn = document.createElement('button');
+                  removeBtn.textContent = 'Remove';
+                  removeBtn.addEventListener('click', async function (e) {
                     e.preventDefault();
                     await currentOrganization.removeMember(membership.userId);
                   });
@@ -152,25 +152,25 @@
 
           // Render list of organization invitations
           async function renderInvitations(organization, isAdmin) {
-            const list = document.getElementById("invitations_list");
+            const list = document.getElementById('invitations_list');
             try {
               const { totalCount, data } = await organization.getInvitations();
 
               const invitations = data;
 
               if (invitations.length === 0) {
-                list.textContent = "No invitations";
+                list.textContent = 'No invitations';
               }
 
               invitations.map((invitation) => {
-                const li = document.createElement("li");
+                const li = document.createElement('li');
                 li.textContent = `${invitation.emailAddress} - ${invitation.role}`;
 
                 // Add administrative actions; revoke invitation
                 if (isAdmin) {
-                  const revokeBtn = document.createElement("button");
-                  revokeBtn.textContent = "Revoke";
-                  revokeBtn.addEventListener("click", async function (e) {
+                  const revokeBtn = document.createElement('button');
+                  revokeBtn.textContent = 'Revoke';
+                  revokeBtn.addEventListener('click', async function (e) {
                     e.preventDefault();
                     await invitation.revoke();
                   });
@@ -200,16 +200,16 @@
             if (!currentOrganization) {
               return;
             }
-            const isAdmin = currentMembership.role === "org:admin";
+            const isAdmin = currentMembership.role === 'org:admin';
 
             renderMemberships(currentOrganization, isAdmin);
             renderInvitations(currentOrganization, isAdmin);
 
             if (isAdmin) {
-              const form = document.getElementById("new_invitation");
-              form.addEventListener("submit", async function (e) {
+              const form = document.getElementById('new_invitation');
+              form.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const inputEl = document.getElementById("email_address");
+                const inputEl = document.getElementById('email_address');
                 if (!inputEl) {
                   return;
                 }
@@ -218,7 +218,7 @@
                   console.log(inputEl.value);
                   await currentOrganization.inviteMember({
                     emailAddress: inputEl.value,
-                    role: "org:member",
+                    role: 'org:member',
                   });
                 } catch (err) {
                   console.error(err);
@@ -230,11 +230,11 @@
           init();
         } else {
           // Mount sign in component
-          document.getElementById("app").innerHTML = `
+          document.getElementById('app').innerHTML = `
               <div id="sign-in"></div>
             `;
 
-          const signInDiv = document.getElementById("sign-in");
+          const signInDiv = document.getElementById('sign-in');
 
           Clerk.mountSignIn(signInDiv);
         }
